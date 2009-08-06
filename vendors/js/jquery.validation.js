@@ -12,6 +12,8 @@
 
 (function($) {
   var options = null;
+  var errors = [];
+  
   $.fn.validate = function(rules, opts) {
     options = $.extend({}, $.fn.validate.defaults, opts);
 		
@@ -20,44 +22,30 @@
 				$.fn.validate.ajaxField($(this));
 			});
 		});
+		
+		$.each(rules, function(field) {
+		  var input = $("#" + field);
+		  var validationRules = this;
+      input.blur(function(){
+        $(this)
+          .removeClass("form-error")
+        .parent()
+          .removeClass("error")
+          .children("div.error-message").remove();
+        $.fn.validate.validateField(field,validationRules);
+      });
+    });
 
     return this.each(function() {
       $this = $(this);
-      $this.submit(function() {
-        var errors = [];
-        
+      $this.submit(function() {   
         $.fn.validate.beforeFilter();
-      
+        errors = [];
         $.each(rules, function(field) {
-          var val = $("#" + field).val();
-          var fieldName = $('#' + field).attr('name');
-          if(typeof val == "string") {
-            val = $.trim(val);
+          result = $.fn.validate.validateField(field,this);
+          if (typeof result != "undefined") {
+            return result;
           }
-          
-          $.each(this, function() {
-            //field doesn't exist...skip
-            if ($("#" + field).attr("id") == undefined) {
-              return true;
-            }
-
-            if (this['allowEmpty'] && typeof val == "string" && val == '') {
-              return true;
-            }
-
-            if (this['allowEmpty'] && typeof val == "object" && val == null) {
-              return true;
-            }
-            
-            if (!$.fn.validate.validateRule(val, this['rule'], this['negate'], fieldName)) {
-              errors.push(this['message']);
-              $.fn.validate.setError(field, this['message']);
-              
-              if (this['last'] === true) {
-                return false;
-              }  
-            }
-          });
         });
       
         $.fn.validate.afterFilter(errors);
@@ -70,6 +58,36 @@
       });
     });
   };
+  
+  $.fn.validate.validateField = function (field,validationRules) {
+    var val = $("#" + field).val();
+    var fieldName = $('#' + field).attr('name');
+    if(typeof val == "string") {
+          val = $.trim(val);
+    }
+    $.each(validationRules, function() {
+      if ($("#" + field).attr("id") == undefined) {
+        return true;
+      }
+      
+      if (this['allowEmpty'] && typeof val == "string" && val == '') {
+        return true;
+      }
+
+      if (this['allowEmpty'] && typeof val == "object" && val == null) {
+        return true;
+      }
+      
+      if (!$.fn.validate.validateRule(val, this['rule'], this['negate'], fieldName)) {
+        errors.push(this['message']);
+        $.fn.validate.setError(field, this['message']);
+        
+        if (this['last'] === true) {
+          return false;
+        }
+      }
+    });
+  }
   
   $.fn.validate.validateRule = function(val, rule, negate, fieldName) {
     if(negate == undefined) {

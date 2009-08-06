@@ -73,6 +73,8 @@ class ValidationHelper extends Helper {
 																						 );
 						}
           }
+          
+          $validator['message'] = utf8_encode($validator['message']);
 
           if (!empty($validator['rule'])) {
             $rule = $this->__convertRule($validator['rule']);
