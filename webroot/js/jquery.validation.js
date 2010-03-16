@@ -5,17 +5,17 @@
  * http://github.com/mcurry/cakephp_plugin_validation
  * http://sandbox2.pseudocoder.com/demo/validation
  *
- * @author      mattc <matt@pseudocoder.com>
- * @license     MIT
+ * @author			mattc <matt@pseudocoder.com>
+ * @license			MIT
  *
  */
 
 (function($) {
-  var options = null;
-  var errors = [];
+	var options = null;
+	var errors = [];
 
-  $.fn.validate = function(rules, opts) {
-    options = $.extend({}, $.fn.validate.defaults, opts);
+	$.fn.validate = function(rules, opts) {
+		options = $.extend({}, $.fn.validate.defaults, opts);
 
 		$.each(opts.watch, function(fieldId) {
 			$("#" + opts.watch[fieldId]).change(function() {
@@ -24,169 +24,169 @@
 		});
 
 		$.each(rules, function(field) {
-		  var input = $("#" + field);
-		  var validationRules = this;
-      input.blur(function(){
-        $(this)
-          .removeClass("form-error")
-        .parent()
-          .removeClass("error")
-          .children("div.error-message").remove();
-        $.fn.validate.validateField(field,validationRules);
-      });
-    });
+			var input = $("#" + field);
+			var validationRules = this;
+			input.blur(function(){
+				$(this)
+					.removeClass("form-error")
+				.parent()
+					.removeClass("error")
+					.children("div.error-message").remove();
+				$.fn.validate.validateField(field,validationRules);
+			});
+		});
 
-    return this.each(function() {
-      $this = $(this);
-      $this.submit(function() {
-        $.fn.validate.beforeFilter();
-        errors = [];
-        $.each(rules, function(field) {
-          result = $.fn.validate.validateField(field,this);
-          if (typeof result != "undefined") {
-            return result;
-          }
-        });
+		return this.each(function() {
+			$this = $(this);
+			$this.submit(function() {
+				$.fn.validate.beforeFilter();
+				errors = [];
+				$.each(rules, function(field) {
+					result = $.fn.validate.validateField(field,this);
+					if (typeof result != "undefined") {
+						return result;
+					}
+				});
 
-        $.fn.validate.afterFilter(errors);
+				$.fn.validate.afterFilter(errors);
 
-        if(errors.length > 0) {
-          return false;
-        }
+				if(errors.length > 0) {
+					return false;
+				}
 
-        return true;
-      });
-    });
-  };
+				return true;
+			});
+		});
+	};
 
-  $.fn.validate.validateField = function (field,validationRules) {
-	var val = null;
-	$field = $("#" + field);
-	if($field.attr("type") == "checkbox") {
-		if($field.filter(":checked").length > 0) {
-			val = $field.filter(":checked").val();
+	$.fn.validate.validateField = function (field,validationRules) {
+		var val = null;
+		$field = $("#" + field);
+		if($field.attr("type") == "checkbox") {
+			if($field.filter(":checked").length > 0) {
+				val = $field.filter(":checked").val();
+			} else {
+				val = "0";
+			}
 		} else {
-			val = "0";
+			val = $field.val();
 		}
-	} else {
-		val = $field.val();
+		var fieldName = $field.attr('name');
+		if(typeof val == "string") {
+					val = $.trim(val);
+		}
+		$.each(validationRules, function() {
+			if ($field.attr("id") == undefined) {
+				return true;
+			}
+
+			if (this['allowEmpty'] && typeof val == "string" && val == '') {
+				return true;
+			}
+
+			if (this['allowEmpty'] && typeof val == "object" && val == null) {
+				return true;
+			}
+
+			if (!$.fn.validate.validateRule(val, this['rule'], this['negate'], fieldName)) {
+				errors.push(this['message']);
+				$.fn.validate.setError(field, this['message']);
+
+				if (this['last'] === true) {
+					return false;
+				}
+			}
+		});
 	}
-    var fieldName = $field.attr('name');
-    if(typeof val == "string") {
-          val = $.trim(val);
-    }
-    $.each(validationRules, function() {
-      if ($field.attr("id") == undefined) {
-        return true;
-      }
 
-      if (this['allowEmpty'] && typeof val == "string" && val == '') {
-        return true;
-      }
+	$.fn.validate.validateRule = function(val, rule, negate, fieldName) {
+		if(negate == undefined) {
+			negate = false;
+		}
 
-      if (this['allowEmpty'] && typeof val == "object" && val == null) {
-        return true;
-      }
+		//handle custom functions
+		if(typeof rule == 'object') {
+			if($.fn.validate[rule.rule] != undefined) {
+				return $.fn.validate[rule.rule](val, rule.params, fieldName);
+			} else {
+				return true;
+			}
+		}
 
-      if (!$.fn.validate.validateRule(val, this['rule'], this['negate'], fieldName)) {
-        errors.push(this['message']);
-        $.fn.validate.setError(field, this['message']);
+		//handle regex rules
+		if (negate && val.match(eval(rule))) {
+			return false;
+		} else if (!negate && !val.match(eval(rule))) {
+			return false;
+		}
 
-        if (this['last'] === true) {
-          return false;
-        }
-      }
-    });
-  }
+		return true;
+	};
 
-  $.fn.validate.validateRule = function(val, rule, negate, fieldName) {
-    if(negate == undefined) {
-      negate = false;
-    }
+	$.fn.validate.bool = function(val) {
+		return $.fn.validate.inList(val, [0, 1, '0', '1', true, false]);
+	};
 
-    //handle custom functions
-    if(typeof rule == 'object') {
-      if($.fn.validate[rule.rule] != undefined) {
-        return $.fn.validate[rule.rule](val, rule.params, fieldName);
-      } else {
-        return true;
-      }
-    }
+	$.fn.validate.comparison = function(val, params) {
+		if(val == "") {
+			return false;
+		}
 
-    //handle regex rules
-    if (negate && val.match(eval(rule))) {
-      return false;
-    } else if (!negate && !val.match(eval(rule))) {
-      return false;
-    }
+		val = Number(val);
+		if(val == "NaN") {
+			return false;
+		}
 
-    return true;
-  };
+		if(eval(val + params[0] + params[1])) {
+			return true;
+		}
 
-  $.fn.validate.bool = function(val) {
-    return $.fn.validate.inList(val, [0, 1, '0', '1', true, false]);
-  };
+		return false;
+	};
 
-  $.fn.validate.comparison = function(val, params) {
-    if(val == "") {
-      return false;
-    }
+	$.fn.validate.inList = function(val, params) {
+		if(params != null) {
+			if($.inArray(val, params) == -1) {
+				return false;
+			}
+		}
 
-    val = Number(val);
-    if(val == "NaN") {
-      return false;
-    }
+		return true;
+	};
 
-    if(eval(val + params[0] + params[1])) {
-      return true;
-    }
+	$.fn.validate.range = function(val, params) {
+		if (val < parseInt(params[0])) {
+			return false;
+		}
+		if (val > parseInt(params[1])) {
+			return false;
+		}
 
-    return false;
-  };
+		return true;
+	};
 
-  $.fn.validate.inList = function(val, params) {
-    if(params != null) {
-      if($.inArray(val, params) == -1) {
-        return false;
-      }
-    }
+	$.fn.validate.multiple = function(val, params) {
+		if(typeof val != "object" || val == null) {
+			return false;
+		}
 
-    return true;
-  };
+		if(params.min != null && val.length < params.min) {
+			return false;
+		}
+		if(params.max != null && val.length > params.max) {
+			return false;
+		}
 
-  $.fn.validate.range = function(val, params) {
-    if (val < parseInt(params[0])) {
-      return false;
-    }
-    if (val > parseInt(params[1])) {
-      return false;
-    }
+		if(params["in"] != null) {
+			for(i = 0; i < params["in"].length; i ++) {
+				if($.inArray(params["in"][i], val) == -1) {
+					return false;
+				}
+			}
+		}
 
-    return true;
-  };
-
-  $.fn.validate.multiple = function(val, params) {
-    if(typeof val != "object" || val == null) {
-      return false;
-    }
-
-    if(params.min != null && val.length < params.min) {
-      return false;
-    }
-    if(params.max != null && val.length > params.max) {
-      return false;
-    }
-
-    if(params["in"] != null) {
-      for(i = 0; i < params["in"].length; i ++) {
-        if($.inArray(params["in"][i], val) == -1) {
-          return false;
-        }
-      }
-    }
-
-    return true;
-  };
+		return true;
+	};
 
 	$.fn.validate.notEmpty = function(val, params) {
 		if(typeof val == "string" && val == "") {
@@ -200,16 +200,16 @@
 		return true;
 	}
 
-  $.fn.validate.range = function(val, params) {
-    if (val < parseInt(params[0])) {
-      return false;
-    }
-    if (val > parseInt(params[1])) {
-      return false;
-    }
+	$.fn.validate.range = function(val, params) {
+		if (val < parseInt(params[0])) {
+			return false;
+		}
+		if (val > parseInt(params[1])) {
+			return false;
+		}
 
-    return true;
-  };
+		return true;
+	};
 
 	$.fn.validate.ajaxField = function($field) {
 		$.fn.validate.clearError($field);
@@ -245,27 +245,27 @@
 					.children(".error-message").remove();
 	}
 
-  $.fn.validate.setError = function(field, message) {
-    $("#" + field).addClass("form-error")
-                  .parents("div:first").addClass("error")
-                  .append('<div class="error-message">'  + message +  '</div>');
-  };
+	$.fn.validate.setError = function(field, message) {
+		$("#" + field).addClass("form-error")
+			.parents("div:first").addClass("error")
+			.append('<div class="error-message">'  + message +	'</div>');
+	};
 
-  $.fn.validate.beforeFilter = function() {
-    if(options.messageId != null) {
-      $("#" + options.messageId).html("")
-                                .slideDown();
-    }
+	$.fn.validate.beforeFilter = function() {
+		if(options.messageId != null) {
+			$("#" + options.messageId).html("")
+				.slideDown();
+		}
 
-    $(".error-message").remove();
-    $("input").removeClass("form-error");
-    $("div").removeClass("error")
-  };
+		$(".error-message").remove();
+		$("input").removeClass("form-error");
+		$("div").removeClass("error")
+	};
 
-  $.fn.validate.afterFilter = function(errors) {
-    if(options.messageId != null) {
-      $("#" + options.messageId).html(errors.join("<br />"))
-                                .slideDown();
-    }
-  };
+	$.fn.validate.afterFilter = function(errors) {
+		if(options.messageId != null) {
+			$("#" + options.messageId).html(errors.join("<br />"))
+				.slideDown();
+		}
+	};
 })(jQuery);
