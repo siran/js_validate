@@ -29,7 +29,7 @@ class ValidationHelper extends Helper {
   var $whitelist = false;
 
   function bind($modelNames, $options=array()) {
-    $defaultOptions = array('form' => 'form', 'inline' => true, 'root' => Router::url('/'), 'watch' => array());
+    $defaultOptions = array('form' => 'form', 'inline' => true, 'root' => Router::url('/'), 'watch' => array(), 'catch' => true);
     $options = am($defaultOptions, $options);
     $pluginOptions = array_intersect_key($options, array('messageId' => true, 'root' => true, 'watch' => true));
 
@@ -109,13 +109,17 @@ class ValidationHelper extends Helper {
 			}			
     }
 		
-
-		
 		if ($options['form']) {
-      $js = sprintf('$(function() { $("%s").validate(%s, %s) });',
-                    $options['form'],
-                    $this->Javascript->object($validation),
-                    $this->Javascript->object($pluginOptions));
+			if($options['catch']) {
+				$js = sprintf('$(function() { $("%s").validate(%s, %s) });',
+											$options['form'],
+											$this->Javascript->object($validation),
+											$this->Javascript->object($pluginOptions));
+			} else {
+				$js = sprintf('$(function() { $("%s").data("validation", %s) });',
+											$options['form'],
+											$this->Javascript->object($validation));	
+			}
     } else {
       return $this->Javascript->object($validation);
     }
@@ -203,9 +207,9 @@ class ValidationHelper extends Helper {
       case 'ip':
         return VALID_IP_JS;
       case 'minLength':
-        return sprintf('/^.{%d,}$/', $params[0]);
+        return sprintf('/^[\s\S]{%d,}$/', $params[0]);
       case 'maxLength':
-        return sprintf('/^.{0,%d}$/', $params[0]);
+        return sprintf('/^[\s\S]{0,%d}$/', $params[0]);
       case 'money':
         //The Cake regex for money was giving me issues, even within PHP.  Skip for now
         return array('rule' => 'money');
@@ -213,6 +217,8 @@ class ValidationHelper extends Helper {
         $defaults = array('in' => null, 'max' => null, 'min' => null);
         $params = array_merge($defaults, $params[0]);
         return array('rule' => 'multiple', 'params' => $params);
+	    case 'notEmpty':
+        return array('rule' => 'notEmpty');
       case 'numeric':
         //Cake uses PHP's is_numeric function, which actually accepts a varied input
         //(both +0123.45e6 and 0xFF are valid) then what is allowed in this regular expression.

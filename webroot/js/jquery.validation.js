@@ -60,13 +60,23 @@
   };
 
   $.fn.validate.validateField = function (field,validationRules) {
-    var val = $("#" + field).val();
-    var fieldName = $('#' + field).attr('name');
+	var val = null;
+	$field = $("#" + field);
+	if($field.attr("type") == "checkbox") {
+		if($field.filter(":checked").length > 0) {
+			val = $field.filter(":checked").val();
+		} else {
+			val = "0";
+		}
+	} else {
+		val = $field.val();
+	}
+    var fieldName = $field.attr('name');
     if(typeof val == "string") {
           val = $.trim(val);
     }
     $.each(validationRules, function() {
-      if ($("#" + field).attr("id") == undefined) {
+      if ($field.attr("id") == undefined) {
         return true;
       }
 
@@ -173,6 +183,29 @@
           return false;
         }
       }
+    }
+
+    return true;
+  };
+
+	$.fn.validate.notEmpty = function(val, params) {
+		if(typeof val == "string" && val == "") {
+			return false;
+		}
+
+		if(typeof val == "object" && val.length == 0) {
+			return false;
+		}
+
+		return true;
+	}
+
+  $.fn.validate.range = function(val, params) {
+    if (val < parseInt(params[0])) {
+      return false;
+    }
+    if (val > parseInt(params[1])) {
+      return false;
     }
 
     return true;
