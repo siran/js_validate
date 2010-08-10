@@ -15,9 +15,9 @@
 	var errors = [];
 
 	$.fn.validate = function(rules, opts) {
-		options = $.extend({}, $.fn.validate.defaults, opts);
+		options = $.extend({watch:{}}, $.fn.validate.defaults, opts);
 
-		$.each(opts.watch, function(fieldId) {
+		$.each(options.watch, function(fieldId) {
 			$("#" + opts.watch[fieldId]).change(function() {
 				$.fn.validate.ajaxField($(this));
 			});
