@@ -21,7 +21,7 @@ if (!defined('VALID_IP_JS')) {
 }
 
 class ValidationHelper extends Helper {
-  var $helpers = array('Javascript');
+  var $helpers = array('Html', 'Js');
 
   //For security reasons you may not want to include all possible validations.
   //In your bootstrap you can define which are allowed
@@ -113,21 +113,21 @@ class ValidationHelper extends Helper {
 			if($options['catch']) {
 				$js = sprintf('$(function() { $("%s").validate(%s, %s) });',
 											$options['form'],
-											$this->Javascript->object($validation),
-											$this->Javascript->object($pluginOptions));
+											$this->Js->object($validation),
+											$this->Js->object($pluginOptions));
 			} else {
 				$js = sprintf('$(function() { $("%s").data("validation", %s) });',
 											$options['form'],
-											$this->Javascript->object($validation));	
+											$this->Js->object($validation));	
 			}
     } else {
-      return $this->Javascript->object($validation);
+      return $this->Js->object($validation);
     }
 
     if ($options['inline']) {
-      return sprintf($this->Javascript->tags['javascriptblock'], $js);
+      return $this->Html->scriptBlock($js);
     } else {
-      $this->Javascript->codeBlock($js, array('inline' => false));
+      $this->Html->scriptBlock($js, array('inline' => false));
     }
 
     return;
