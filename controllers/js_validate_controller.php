@@ -40,4 +40,3 @@ class JsValidateController extends JsValidateAppController {
 		}
 	}
 }
-?>
