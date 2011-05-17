@@ -5,108 +5,98 @@
  * http://github.com/mcurry/cakephp_plugin_validation
  * http://sandbox2.pseudocoder.com/demo/validation
  *
- * @author			mattc <matt@pseudocoder.com>
- * @license			MIT
+ * @author      mattc <matt@pseudocoder.com>
+ * @license     MIT
  *
  */
 
 (function($) {
-	var options = null;
-	var errors = [];
-
 	$.fn.validate = function(rules, opts) {
-		options = $.extend({watch:{}}, $.fn.validate.defaults, opts);
+		options = $.extend({}, $.validate.defaults, opts);
 
-		$.each(options.watch, function(fieldId) {
+		$.each(opts.watch,
+		function(fieldId) {
 			$("#" + opts.watch[fieldId]).change(function() {
 				$.fn.validate.ajaxField($(this));
-			});
-		});
-
-		$.each(rules, function(field) {
-			var input = $("#" + field);
-			var validationRules = this;
-			input.blur(function(){
-				$(this)
-					.removeClass("form-error")
-				.parent()
-					.removeClass("error")
-					.children("div.error-message").remove();
-				$.fn.validate.validateField(field,validationRules);
 			});
 		});
 
 		return this.each(function() {
 			$this = $(this);
 			$this.submit(function() {
-				$.fn.validate.beforeFilter();
-				errors = [];
-				$.each(rules, function(field) {
-					result = $.fn.validate.validateField(field,this);
-					if (typeof result != "undefined") {
-						return result;
-					}
-				});
-
-				$.fn.validate.afterFilter(errors);
-
-				if(errors.length > 0) {
-					return false;
-				}
-
-				return true;
+				return $.fn.validate.check(rules);
 			});
 		});
 	};
-
-	$.fn.validate.validateField = function (field,validationRules) {
+	
+	$.fn.validate.check = function(form, rules) {
+		var errors = [];
 		var val = null;
-		$field = $("#" + field);
-		if($field.attr("type") == "checkbox") {
-			if($field.filter(":checked").length > 0) {
-				val = $field.filter(":checked").val();
-			} else {
-				val = "0";
-			}
-		} else {
-			val = $field.val();
-		}
-		var fieldName = $field.attr('name');
-		if(typeof val == "string") {
-					val = $.trim(val);
-		}
-		$.each(validationRules, function() {
-			if ($field.attr("id") == undefined) {
-				return true;
-			}
 
-			if (this['allowEmpty'] && typeof val == "string" && val == '') {
-				return true;
-			}
+		$.fn.validate.beforeFilter();
 
-			if (this['allowEmpty'] && typeof val == "object" && val == null) {
-				return true;
-			}
-
-			if (!$.fn.validate.validateRule(val, this['rule'], this['negate'], fieldName)) {
-				errors.push(this['message']);
-				$.fn.validate.setError(field, this['message']);
-
-				if (this['last'] === true) {
-					return false;
+		$.each(rules,
+		function(field) {
+			$field = $("#" + field);
+			if ($field.attr("type") == "checkbox") {
+				if ($field.filter(":checked").length > 0) {
+					val = $field.filter(":checked").val();
+				} else {
+					val = "0";
 				}
+			} else {
+				val = $field.val();
 			}
+
+			var fieldName = $field.attr('name');
+			if (typeof val == "string") {
+				val = $.trim(val);
+			}
+
+			$.each(this,
+			function() {
+				//field doesn't exist...skip
+				if ($("#" + field).attr("id") == undefined) {
+					return true;
+				}
+
+				if (this['allowEmpty'] && typeof val == "string" && val == '') {
+					return true;
+				}
+
+				if (this['allowEmpty'] && typeof val == "object" && val == null) {
+					return true;
+				}
+
+				if (!$.fn.validate.validateRule(val, this['rule'], this['negate'], fieldName)) {
+					errors.push(this['message']);
+					$.fn.validate.setError(field, this['message']);
+
+					if (this['last'] === true) {
+						return false;
+					}
+				}
+			});
 		});
+
+		$.fn.validate.afterFilter(errors);
+
+		if (errors.length > 0) {
+			console.log("false");
+			return false;
+		}
+
+		return true;
 	}
 
 	$.fn.validate.validateRule = function(val, rule, negate, fieldName) {
-		if(negate == undefined) {
+		if (negate == undefined) {
 			negate = false;
 		}
 
 		//handle custom functions
-		if(typeof rule == 'object') {
-			if($.fn.validate[rule.rule] != undefined) {
+		if (typeof rule == 'object') {
+			if ($.fn.validate[rule.rule] != undefined) {
 				return $.fn.validate[rule.rule](val, rule.params, fieldName);
 			} else {
 				return true;
@@ -123,21 +113,21 @@
 		return true;
 	};
 
-	$.fn.validate.bool = function(val) {
+	$.fn.validate.boolean = function(val) {
 		return $.fn.validate.inList(val, [0, 1, '0', '1', true, false]);
 	};
 
 	$.fn.validate.comparison = function(val, params) {
-		if(val == "") {
+		if (val == "") {
 			return false;
 		}
 
 		val = Number(val);
-		if(val == "NaN") {
+		if (val == "NaN") {
 			return false;
 		}
 
-		if(eval(val + params[0] + params[1])) {
+		if (eval(val + params[0] + params[1])) {
 			return true;
 		}
 
@@ -145,8 +135,8 @@
 	};
 
 	$.fn.validate.inList = function(val, params) {
-		if(params != null) {
-			if($.inArray(val, params) == -1) {
+		if (params != null) {
+			if ($.inArray(val, params) == -1) {
 				return false;
 			}
 		}
@@ -154,32 +144,21 @@
 		return true;
 	};
 
-	$.fn.validate.range = function(val, params) {
-		if (val < parseInt(params[0])) {
-			return false;
-		}
-		if (val > parseInt(params[1])) {
-			return false;
-		}
-
-		return true;
-	};
-
 	$.fn.validate.multiple = function(val, params) {
-		if(typeof val != "object" || val == null) {
+		if (typeof val != "object" || val == null) {
 			return false;
 		}
 
-		if(params.min != null && val.length < params.min) {
+		if (params.min != null && val.length < params.min) {
 			return false;
 		}
-		if(params.max != null && val.length > params.max) {
+		if (params.max != null && val.length > params.max) {
 			return false;
 		}
 
-		if(params["in"] != null) {
-			for(i = 0; i < params["in"].length; i ++) {
-				if($.inArray(params["in"][i], val) == -1) {
+		if (params["in"] != null) {
+			for (i = 0; i < params["in"].length; i++) {
+				if ($.inArray(params["in"][i], val) == -1) {
 					return false;
 				}
 			}
@@ -189,11 +168,11 @@
 	};
 
 	$.fn.validate.notEmpty = function(val, params) {
-		if(typeof val == "string" && val == "") {
+		if (typeof val == "string" && val == "") {
 			return false;
 		}
 
-		if(typeof val == "object" && val.length == 0) {
+		if (typeof val == "object" && val.length == 0) {
 			return false;
 		}
 
@@ -218,13 +197,13 @@
 		var data = new Object;
 		data[$field.attr("name")] = $field.val();
 		$.post(options.root + "js_validate/field/" + $field.attr("id"), data,
-			function(validates) {
-				$.fn.validate.ajaxAfterFilter($("#" + validates.field));
-				if(!validates.result) {
-					$.fn.validate.setError(validates.field, validates.message);
-				}
-			},
-			"json");
+		function(validates) {
+			$.fn.validate.ajaxAfterFilter($("#" + validates.field));
+			if (!validates.result) {
+				$.fn.validate.setError(validates.field, validates.message);
+			}
+		},
+		"json");
 	}
 
 	$.fn.validate.ajaxBeforeFilter = function($field) {
@@ -236,25 +215,20 @@
 	}
 
 	$.fn.validate.clearError = function($field) {
-		if(typeof $field == "string") {
+		if (typeof $field == "string") {
 			$field = $("#" + field);
 		}
 
-		$field.removeClass("form-error")
-					.parents("div:first").removeClass("error")
-					.children(".error-message").remove();
+		$field.removeClass("form-error").parents("div:first").removeClass("error").children(".error-message").remove();
 	}
 
 	$.fn.validate.setError = function(field, message) {
-		$("#" + field).addClass("form-error")
-			.parents("div:first").addClass("error")
-			.append('<div class="error-message">'  + message +	'</div>');
+		$("#" + field).addClass("form-error").parents("div:first").addClass("error").append('<div class="error-message">' + message + '</div>');
 	};
 
 	$.fn.validate.beforeFilter = function() {
-		if(options.messageId != null) {
-			$("#" + options.messageId).html("")
-				.slideDown();
+		if (options.messageId != null) {
+			$("#" + options.messageId).html("").slideDown();
 		}
 
 		$(".error-message").remove();
@@ -263,9 +237,12 @@
 	};
 
 	$.fn.validate.afterFilter = function(errors) {
-		if(options.messageId != null) {
-			$("#" + options.messageId).html(errors.join("<br />"))
-				.slideDown();
+		if (options.messageId != null) {
+			$("#" + options.messageId).html(errors.join("<br />")).slideDown();
 		}
+	};
+	
+	$.validate.defaults = {
+		watch: []
 	};
 })(jQuery);
