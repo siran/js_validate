@@ -44,6 +44,8 @@ class ValidationHelper extends Helper {
 		//filter the rules to those that can be handled with JavaScript
 		foreach($modelNames as $modelName) {
 			$model = classRegistry::init($modelName);
+			$arr = explode('.',$modelName);
+			$realModelName = $arr[0];
 
 			foreach ($model->validate as $field => $validators) {
 				if (array_intersect(array('rule', 'allowEmpty', 'on', 'message', 'last'), array_keys($validators))) {
@@ -73,7 +75,7 @@ class ValidationHelper extends Helper {
 							);
 						}
 					}
-					
+
 					$validator['message'] = utf8_encode($validator['message']);
 
 					if (!empty($validator['rule'])) {
@@ -99,16 +101,16 @@ class ValidationHelper extends Helper {
 							$temp['negate'] = true;
 						}
 
-						$validation[$modelName . Inflector::camelize($field)][] = $temp;
+						$validation[$realModelName . Inflector::camelize($field)][] = $temp;
 					}
 				}
 			}
-			
+
 			if(!empty($pluginOptions['watch'])) {
 				$pluginOptions['watch'] = $this->__fixWatch($modelName, $pluginOptions['watch']);
-			}			
+			}
 		}
-		
+
 		if ($options['form']) {
 			if($options['catch']) {
 				$js = sprintf('$(function() { $("%s").validate(%s, %s) });',
@@ -120,7 +122,7 @@ class ValidationHelper extends Helper {
 				$js = sprintf('$(function() { $("%s").data("validation", %s) });',
 					$options['form'],
 					$this->Js->object($validation)
-				);	
+				);
 			}
 		} else {
 			return $this->Js->object($validation);
@@ -271,7 +273,7 @@ class ValidationHelper extends Helper {
 				$fields[$i] = $modelName . ucfirst($field);
 			}
 		}
-		
+
 		return $fields;
 	}
 }
