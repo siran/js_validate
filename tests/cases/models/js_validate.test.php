@@ -1,5 +1,5 @@
 <?php
-App::import('Helper', array('JsValidate.Validation', 'Javascript'));
+App::import('Helper', array('JsValidate.Validation', 'Html', 'Js', 'JqueryEngine'));
 App::import('Model', 'JsValidate.JsValidate');
 
 class JsValidateTestCase extends CakeTestCase {
@@ -13,13 +13,15 @@ class JsValidateTestCase extends CakeTestCase {
     $this->JsValidate->validate = array();
 
     $this->Validation = new ValidationHelper();
-    $this->Validation->Javascript = new JavascriptHelper();
+    $this->Validation->Js = new JsHelper();
+    $this->Validation->Js->JqueryEngine = new JqueryEngineHelper();
+    $this->Validation->Html = new HtmlHelper();
   }
 
   function testInstances() {
     $this->assertTrue(is_a($this->JsValidate, 'JsValidate'));
     $this->assertTrue(is_a($this->Validation, 'ValidationHelper'));
-    $this->assertTrue(is_a($this->Validation->Javascript, 'JavascriptHelper'));
+    $this->assertTrue(is_a($this->Validation->Js, 'JsHelper'));
   }
 
   function testNoValidation() {

@@ -28,7 +28,7 @@ class ValidationHelper extends Helper {
 	//Configure::write('javascriptValidationWhitelist', array('alphaNumeric', 'minLength'));
 	var $whitelist = false;
 
-	function bind($modelNames, $options=array()) {
+	function bind($modelNames, $options = array()) {
 		$defaultOptions = array('form' => 'form', 'inline' => true, 'root' => Router::url('/'), 'watch' => array(), 'catch' => true);
 		$options = am($defaultOptions, $options);
 		$pluginOptions = array_intersect_key($options, array('messageId' => true, 'root' => true, 'watch' => true));
