@@ -218,11 +218,11 @@
 			$field = $("#" + field);
 		}
 
-		$field.removeClass("form-error").parents("div:first").removeClass("error").children(".error-message").remove();
+		$field.removeClass("form-error").parent().removeClass("error").children(".error-message").remove();
 	}
 
 	$.fn.validate.setError = function(field, message) {
-		$("#" + field).addClass("form-error").parents("div:first").addClass("error").append('<div class="error-message">' + message + '</div>');
+		$("#" + field).addClass("form-error").parent().addClass("error").append('<div class="error-message">' + message + '</div>');
 	};
 
 	$.fn.validate.beforeFilter = function() {

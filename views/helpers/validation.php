@@ -42,10 +42,14 @@ class ValidationHelper extends Helper {
 		}
 
 		//filter the rules to those that can be handled with JavaScript
-		foreach($modelNames as $modelName) {
+		foreach($modelNames as $alias => $modelName) {
 			$model = classRegistry::init($modelName);
-			$arr = explode('.',$modelName);
-			$realModelName = $arr[0];
+			if (is_numeric($alias)) {
+				$arr = explode('.',$modelName);
+				$realModelName = $arr[0];
+			} else {
+				$realModelName = $alias;
+			}
 
 			foreach ($model->validate as $field => $validators) {
 				if (array_intersect(array('rule', 'allowEmpty', 'on', 'message', 'last'), array_keys($validators))) {
