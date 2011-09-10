@@ -31,7 +31,7 @@ class ValidationHelper extends Helper {
   function bind($modelNames, $options=array()) {
     $defaultOptions = array('form' => 'form', 'inline' => true, 'root' => Router::url('/'), 'watch' => array(), 'catch' => true);
     $options = am($defaultOptions, $options);
-    $pluginOptions = array_intersect_key($options, array('messageId' => true, 'root' => true, 'watch' => true));
+    $pluginOptions = array_intersect_key($options, array('messageId' => true, 'root' => true, 'watch' => true, 'form' => true));
 
     //load the whitelist
     $this->whitelist = Configure::read('javascriptValidationWhitelist');
@@ -230,6 +230,9 @@ class ValidationHelper extends Helper {
         //Don't think there is a way to do this with a regular expressions,
         //so we'll handle this with plain old javascript
         return array('rule' => $rule, 'params' => array($params[0], $params[1]));
+		break;
+		case 'checkbox':
+			return array('rule' => 'checkbox', /*'params' => array($params[0], $params[1])*/);
     }
 
     //try to lookup the regular expression from
