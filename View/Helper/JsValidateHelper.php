@@ -20,15 +20,18 @@ if (!defined('VALID_IP_JS')) {
 	define('VALID_IP_JS', '/^[\d]{1,3}\.[\d]{1,3}\.[\d]{1,3}\.[\d]{1,3}$/');
 }
 
-class ValidationHelper extends Helper {
-	var $helpers = array('Html', 'Js');
+App::uses('AppHelper', 'View/Helper');
+
+class JsValidateHelper extends AppHelper {
+
+	public $helpers = array('Html', 'Js');
 
 	//For security reasons you may not want to include all possible validations.
 	//In your bootstrap you can define which are allowed
 	//Configure::write('javascriptValidationWhitelist', array('alphaNumeric', 'minLength'));
-	var $whitelist = false;
+	public $whitelist = false;
 
-	function bind($modelNames, $options = array()) {
+	public function bind($modelNames, $options = array()) {
 		$defaultOptions = array('form' => 'form', 'inline' => true, 'root' => Router::url('/'), 'watch' => array(), 'catch' => true);
 		$options = am($defaultOptions, $options);
 		$pluginOptions = array_intersect_key($options, array('messageId' => true, 'root' => true, 'watch' => true));
@@ -141,7 +144,7 @@ class ValidationHelper extends Helper {
 		return;
 	}
 
-	function __convertRule($rule) {
+	protected function __convertRule($rule) {
 		$regex = false;
 
 		if ($rule == '_extract') {
@@ -268,7 +271,7 @@ class ValidationHelper extends Helper {
 		return array('rule' => $rule, 'params' => $params);
 	}
 
-	function __fixWatch($modelName, $fields) {
+	protected function __fixWatch($modelName, $fields) {
 		foreach($fields as $i => $field) {
 			if (strpos($field, '.') !== false) {
 				list($model, $field) = explode('.', $field);
@@ -280,4 +283,5 @@ class ValidationHelper extends Helper {
 
 		return $fields;
 	}
+
 }

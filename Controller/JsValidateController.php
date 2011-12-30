@@ -1,14 +1,49 @@
 <?php
+App::uses('JsValidateAppController', 'JsValidate.Controller');
+/**
+ * 
+ */
 class JsValidateController extends JsValidateAppController {
-	var $name = 'JsValidate';
-	var $helpers = array('Javascript', 'JsValidate.Validation');
-	var $components = array('RequestHandler');
-	var $uses = array();
+/**
+ * Name
+ *
+ * @var string
+ */
+	public $name = 'JsValidate';
 
-	function beforeFilter() {
+/**
+ * Helpers
+ *
+ * @var string
+ */
+	public $helpers = array(
+		'Javascript',
+		'JsValidate.JsValidate');
+
+/**
+ * Components
+ *
+ * @var string
+ */
+	public $components = array('RequestHandler');
+
+/**
+ * Models - none
+ *
+ * @var array
+ */
+	public $uses = array();
+
+	public function beforeFilter() {
 	}
 
-	function field($fieldId) {
+/**
+ * Field
+ *
+ * @param string $fieldId
+ * @return void
+ */
+	public function field($fieldId) {
 		Configure::write('debug', 0);
 
 		$modelName = array_shift(array_keys($this->data));
@@ -28,13 +63,13 @@ class JsValidateController extends JsValidateAppController {
 		$this->set('output', $output);
 	}
 
-	function test() {
+	public function test() {
 		if (Configure::read('debug') < 1) {
 			die(__('Debug setting does not allow access to this url.', true));
 		}
 	}
 
-	function test_min() {
+	public function test_min() {
 		if (Configure::read('debug') < 1) {
 			die(__('Debug setting does not allow access to this url.', true));
 		}
