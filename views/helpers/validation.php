@@ -233,6 +233,8 @@ class ValidationHelper extends Helper {
 		break;
 		case 'checkbox':
 			return array('rule' => 'checkbox', /*'params' => array($params[0], $params[1])*/);
+		case 'confirmPassword':
+			return array('rule' => 'confirmPassword', 'params' => $params);
     }
 
     //try to lookup the regular expression from
