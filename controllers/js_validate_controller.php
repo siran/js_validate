@@ -5,17 +5,26 @@ class JsValidateController extends JsValidateAppController {
 	var $components = array('RequestHandler');
 
 	function beforeFilter() {
-
+		parent::beforeFilter();
 	}
 
 	function field($fieldId) {
 		Configure::write('debug', 0);
 
 		$modelName = array_shift(array_keys($this->data));
+
+		foreach ($this->data as $cycleModelName => $data) {
+			if (strpos($fieldId, $cycleModelName) === 0) {
+				$modelName = $cycleModelName;
+				break;
+			}
+			$modelName = null;
+		}
+		if (empty($modelName)) return true;
 		$Model = ClassRegistry::init($modelName);
 		$Model->data = $this->data;
 
-		$fieldName = array_shift(array_keys(array_shift($this->data)));
+		$fieldName = Inflector::underscore(str_replace($modelName, '', $fieldId));
 
 		$output = array('field' => $fieldId);
 		$output['result'] = $Model->validates(array('fieldList' => array($fieldName)));
