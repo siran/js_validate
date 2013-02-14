@@ -15,7 +15,6 @@
 	var errors = [];
 
 	$.fn.validate = function(rules, opts) {
-		console.debug(rules);
 		options = $.extend({}, $.fn.validate.defaults, opts);
 
 		$.each(opts.watch, function(fieldId) {
