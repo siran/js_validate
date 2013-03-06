@@ -245,7 +245,7 @@ class JsValidateHelper extends AppHelper {
 
 		//try to lookup the regular expression from
 		//CakePHP's built-in validation rules
-		$Validation =& Validation::getInstance();
+/*		$Validation =& Validation::getInstance();
 		if (method_exists($Validation, $rule)) {
 			$Validation->regex = null;
 			call_user_func_array(array(&$Validation, $rule), array_merge(array(true), $params));
@@ -253,7 +253,7 @@ class JsValidateHelper extends AppHelper {
 			if ($Validation->regex) {
 				$regex = $Validation->regex;
 			}
-		}
+		}*/
 
 		if ($regex) {
 			//special handling

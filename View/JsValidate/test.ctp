@@ -1,4 +1,4 @@
-<?php echo $this->Javascript->codeBlock('var validationRules = ' . $validation->bind('JsValidate', array('form' => false)) . ';'); ?>
+<?php echo $this->Html->scriptBlock('var validationRules = ' . $validation->bind('JsValidate', array('form' => false)) . ';'); ?>
                              
 <?php echo $this->Html->script(array('/js_validate/js/jquery.validation',
                                    'http://github.com/jquery/qunit/raw/master/qunit/qunit.js',
